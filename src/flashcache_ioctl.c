@@ -38,6 +38,7 @@
 #include <linux/sysctl.h>
 #include <linux/version.h>
 #include <linux/pid.h>
+#include <linux/ioprio.h>
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,26)
 #include "dm.h"
@@ -336,6 +337,10 @@ flashcache_uncacheable(struct cache_c *dmc, struct bio *bio)
 				dontcache = 0;
 				goto out;
 			}
+		}
+		if (IOPRIO_PRIO_CLASS(current->io_context->ioprio) == IOPRIO_CLASS_NOCACHE) {
+		    dontcache = 1;
+		    goto out;
 		}
 
 		/* Finally, if we are neither in a whitelist or a blacklist,
