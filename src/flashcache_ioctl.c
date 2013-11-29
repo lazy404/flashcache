@@ -338,6 +338,8 @@ flashcache_uncacheable(struct cache_c *dmc, struct bio *bio)
 				goto out;
 			}
 		}
+
+		/* if special io class, disable cache */
 		if (current->io_context)
 		    if (IOPRIO_PRIO_CLASS(current->io_context->ioprio) == IOPRIO_CLASS_NOCACHE) {
 			dontcache = 1;
@@ -357,6 +359,14 @@ flashcache_uncacheable(struct cache_c *dmc, struct bio *bio)
 							FLASHCACHE_WHITELIST);
 		if (!dontcache)
 			goto out;
+
+		/* if special io class, enable cache */
+		if (current->io_context)
+		    if (IOPRIO_PRIO_CLASS(current->io_context->ioprio) == IOPRIO_CLASS_NOCACHE) {
+			dontcache = 0;
+			goto out;
+		    }
+
 		/* Is the tgid in the whitelist ? */
 		dontcache = !flashcache_find_pid_locked(dmc, current->tgid, 
 							FLASHCACHE_WHITELIST);
