@@ -5,9 +5,9 @@ diff -ru a/block/cfq-iosched.c b/block/cfq-iosched.c
  		cfqq->ioprio = task_ioprio(ioc);
  		cfqq->ioprio_class = IOPRIO_CLASS_BE;
  		break;
-+	case IOPRIO_CLASS_NOCACHE:
++	case IOPRIO_CLASS_FLASHCACHE:
 +		cfqq->ioprio = task_ioprio(ioc);
-+		cfqq->ioprio_class = IOPRIO_CLASS_NOCACHE;
++		cfqq->ioprio_class = IOPRIO_CLASS_FLASHCACHE;
 +		break;
  	case IOPRIO_CLASS_IDLE:
  		cfqq->ioprio_class = IOPRIO_CLASS_IDLE;
@@ -16,7 +16,7 @@ diff -ru a/block/cfq-iosched.c b/block/cfq-iosched.c
  	case IOPRIO_CLASS_RT:
  		return &cfqd->async_cfqq[0][ioprio];
  	case IOPRIO_CLASS_BE:
-+	case IOPRIO_CLASS_NOCACHE:
++	case IOPRIO_CLASS_FLASHCACHE:
  		return &cfqd->async_cfqq[1][ioprio];
  	case IOPRIO_CLASS_IDLE:
  		return &cfqd->async_idle_cfqq;
@@ -27,7 +27,7 @@ diff -ru a/fs/ioprio.c b/fs/ioprio.c
  				return -EPERM;
  			/* fall through, rt has prio field too */
  		case IOPRIO_CLASS_BE:
-+		case IOPRIO_CLASS_NOCACHE:
++		case IOPRIO_CLASS_FLASHCACHE:
  			if (data >= IOPRIO_BE_NR || data < 0)
  				return -EINVAL;
  
@@ -68,7 +68,7 @@ diff -ru a/include/linux/ioprio.h b/include/linux/ioprio.h
  	IOPRIO_CLASS_RT,
  	IOPRIO_CLASS_BE,
  	IOPRIO_CLASS_IDLE,
-+	IOPRIO_CLASS_NOCACHE,
++	IOPRIO_CLASS_FLASHCACHE,
  };
  
  /*

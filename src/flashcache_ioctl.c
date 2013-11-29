@@ -341,7 +341,7 @@ flashcache_uncacheable(struct cache_c *dmc, struct bio *bio)
 
 		/* if special io class, disable cache */
 		if (current->io_context)
-		    if (IOPRIO_PRIO_CLASS(current->io_context->ioprio) == IOPRIO_CLASS_NOCACHE) {
+		    if (IOPRIO_PRIO_CLASS(current->io_context->ioprio) == IOPRIO_CLASS_FLASHCACHE) {
 			dontcache = 1;
 			goto out;
 		    }
@@ -362,7 +362,7 @@ flashcache_uncacheable(struct cache_c *dmc, struct bio *bio)
 
 		/* if special io class, enable cache */
 		if (current->io_context)
-		    if (IOPRIO_PRIO_CLASS(current->io_context->ioprio) == IOPRIO_CLASS_NOCACHE) {
+		    if (IOPRIO_PRIO_CLASS(current->io_context->ioprio) == IOPRIO_CLASS_FLASHCACHE) {
 			dontcache = 0;
 			goto out;
 		    }
