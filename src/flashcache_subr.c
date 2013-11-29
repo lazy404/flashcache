@@ -1020,7 +1020,7 @@ flashcache_update_sync_progress(struct cache_c *dmc)
 {
 	u_int64_t dirty_pct;
 	
-	if (dmc->flashcache_stats.cleanings % 1000)
+	if (dmc->flashcache_stats.cleanings % 10000)
 		return;
 	if (!atomic_read(&dmc->nr_dirty) || !dmc->size || !printk_ratelimit())
 		return;
