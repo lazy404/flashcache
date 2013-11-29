@@ -1,0 +1,85 @@
+diff -ru a/block/cfq-iosched.c b/block/cfq-iosched.c
+--- a/block/cfq-iosched.c	2013-11-19 21:40:54.000000000 +0100
++++ b/block/cfq-iosched.c	2013-11-26 23:43:19.153185685 +0100
+@@ -3049,6 +3049,10 @@
+ 		cfqq->ioprio = task_ioprio(ioc);
+ 		cfqq->ioprio_class = IOPRIO_CLASS_BE;
+ 		break;
++	case IOPRIO_CLASS_NOCACHE:
++		cfqq->ioprio = task_ioprio(ioc);
++		cfqq->ioprio_class = IOPRIO_CLASS_NOCACHE;
++		break;
+ 	case IOPRIO_CLASS_IDLE:
+ 		cfqq->ioprio_class = IOPRIO_CLASS_IDLE;
+ 		cfqq->ioprio = 7;
+@@ -3214,6 +3218,7 @@
+ 	case IOPRIO_CLASS_RT:
+ 		return &cfqd->async_cfqq[0][ioprio];
+ 	case IOPRIO_CLASS_BE:
++	case IOPRIO_CLASS_NOCACHE:
+ 		return &cfqd->async_cfqq[1][ioprio];
+ 	case IOPRIO_CLASS_IDLE:
+ 		return &cfqd->async_idle_cfqq;
+diff -ru a/fs/ioprio.c b/fs/ioprio.c
+--- a/fs/ioprio.c	2013-11-19 21:40:54.000000000 +0100
++++ b/fs/ioprio.c	2013-11-26 23:40:29.409185581 +0100
+@@ -107,6 +107,7 @@
+ 				return -EPERM;
+ 			/* fall through, rt has prio field too */
+ 		case IOPRIO_CLASS_BE:
++		case IOPRIO_CLASS_NOCACHE:
+ 			if (data >= IOPRIO_BE_NR || data < 0)
+ 				return -EINVAL;
+ 
+diff -ru a/fs/proc/generic.c b/fs/proc/generic.c
+--- a/fs/proc/generic.c	2013-11-19 21:40:54.000000000 +0100
++++ b/fs/proc/generic.c	2013-11-27 00:25:52.160181911 +0100
+@@ -203,6 +203,12 @@
+ 	return rv;
+ }
+ 
++void *PDE_DATA(const struct inode *inode)
++{
++        return __PDE_DATA(inode);
++}
++
++
+ static ssize_t
+ proc_file_write(struct file *file, const char __user *buffer,
+ 		size_t count, loff_t *ppos)
+diff -ru a/fs/proc/internal.h b/fs/proc/internal.h
+--- a/fs/proc/internal.h	2013-11-19 21:40:54.000000000 +0100
++++ b/fs/proc/internal.h	2013-11-27 00:25:20.171182380 +0100
+@@ -137,4 +137,10 @@
+ 
+ extern const struct inode_operations proc_hard_inode_operations;
+ 
++
++static inline void *__PDE_DATA(const struct inode *inode) {
++         return PDE(inode)->data;
++}
++ 
++
+ #define PROC_IS_HARDLINK(d) (d->proc_iops == &proc_hard_inode_operations)
+diff -ru a/include/linux/ioprio.h b/include/linux/ioprio.h
+--- a/include/linux/ioprio.h	2013-11-19 21:40:54.000000000 +0100
++++ b/include/linux/ioprio.h	2013-11-26 23:39:08.028185434 +0100
+@@ -28,6 +28,7 @@
+ 	IOPRIO_CLASS_RT,
+ 	IOPRIO_CLASS_BE,
+ 	IOPRIO_CLASS_IDLE,
++	IOPRIO_CLASS_NOCACHE,
+ };
+ 
+ /*
+diff -ru a/include/linux/proc_fs.h b/include/linux/proc_fs.h
+--- a/include/linux/proc_fs.h	2013-11-19 21:40:54.000000000 +0100
++++ b/include/linux/proc_fs.h	2013-11-22 13:15:55.108683303 +0100
+@@ -30,6 +30,7 @@
+ enum {
+ 	PROC_ROOT_INO = 1,
+ };
++extern void *PDE_DATA(const struct inode *);
+ 
+ /*
+  * This is not completely implemented yet. The idea is to
